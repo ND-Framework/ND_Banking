@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style.css">
+        <script src="https://use.fontawesome.com/releases/v6.2.1/js/all.js" data-auto-a11y="true"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="script.js" type="text/javascript" defer></script>
+    </head>
+    <body>
+        <div class="bank">
+            <div class="bank-nav">
+                <img src="img/NDLogoSilver.png">
+                <button id="homeButton" data-page="home"><i class="fa-solid fa-house-user"></i> Home</button>
+                <button data-page="invoice"><i style="margin-left: 7%;" class="fa-solid fa-file-invoice"></i> Invoices</button>
+                <button data-page="transfer"><i class="fa-solid fa-money-bill-transfer"></i> Transfer</button>
+                <button id="exitButton" data-page="close"><i class="fa-solid fa-right-from-bracket"></i> Close</button>
+            </div>
+            <div class="bank-home">
+                <div class="bank-home-card">
+                    <img src="img/NDLogoBlack.png">
+                    <p class="bank-home-card-balance">$3500</p>
+                    <div class="tooltip">
+                        <p class="bank-home-card-number"></p>
+                    </div>
+                    <p class="bank-home-card-name">John Doe</p>
+                    <p class="bank-home-card-visa"><i class="fa-brands fa-cc-visa"></i></p>
+                </div>
+                <div class="bank-home-box">
+                    <p>History:</p>
+                    <div class="bank-home-boxContent">
+                        
+                    </div>
+                </div>
+                <div class="bank-home-transaction">
+                    <input type="number" placeholder="Amount">
+                    <p>$</p>
+                    <div>
+                        <button>Deposit</button><button>Withdraw</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
