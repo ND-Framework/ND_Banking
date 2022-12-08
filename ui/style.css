@@ -264,3 +264,139 @@
     box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
     opacity: 0.6;
 }
+
+.bank-invoice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 0.15fr 1fr;
+    column-gap: 2.5%;
+
+    position: relative;
+    top: 4%;
+    height: 65vh;
+    width: 100%;
+}
+.bank-invoice-top > p {
+    margin: 2% auto;
+    text-align: center;
+    color: #ccc;
+    font-size: 2.5ch;
+}
+.bank-invoice-top > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 3%;
+    margin: auto;
+    width: 65%;
+    height: 30%;
+}
+.bank-invoice-top > div > button {
+    background-color: var(--color-main-3);
+    color: var(--color-theme-3);
+    border: none;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+.bank-invoice-top > div > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px !important;
+    opacity: 0.4 !important;
+}
+.bank-invoice-box {
+    /* border: var(--color-theme-1) 2px solid; */
+    /* box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px; */
+    border-radius: 8px;
+    height: 55vh;
+    overflow-y: auto;
+}
+.bank-invoice-box > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    color: #ccc;
+
+    margin: 2% 5%;
+    padding: 2% 5%;
+    height: 10%;
+    width: 80%;
+    background-color: var(--color-main-4);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 12px;
+    border-radius: 8px;
+}
+.bank-invoice-box > div > div > h4, .bank-invoice-box > div > div > p {
+    margin: 0.85vh 0;
+}
+.bank-invoice-box > div > button {
+    margin: auto;
+    height: 45%;
+    width: 65%;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--color-theme-2);
+    border: var(--color-theme-2) 1px solid;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    transition: 0.2s;
+}
+.bank-invoice-box > div > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    background-color: var(--color-main-3);
+    color: var(--color-theme-3);
+    border: var(--color-theme-3) 1px solid;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px;
+}
+
+.bank-invoice-creator {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 5% 5%;
+    margin: 0 auto;
+    width: 80%;
+}
+.bank-invoice-creator > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 5%;
+    margin: 0;
+}
+.bank-invoice-creator > div > input {
+    padding: 1% 5% 1% 8%;
+    border-radius: 8px;
+
+    outline: none;
+    background: none;
+    background-color: var(--color-main-4);
+    border: none;
+    color: var(--color-theme-3);
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+    font-size: 1.85ch;
+}
+.bank-invoice-creator > div > input::placeholder {
+    color: #ccc;
+}
+.bank-invoice-creator > div > input[type=number]::-webkit-inner-spin-button {
+    appearance: none;
+}
+
+.bank-invoice-creator > button {
+    margin: 5% auto;
+    height: 100%;
+    width: 50%;
+    background-color: var(--color-main-3);
+    color: var(--color-theme-3);
+    border: none;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    transition: 0.2s;
+}
+.bank-invoice-creator > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+    opacity: 0.6;
+}
