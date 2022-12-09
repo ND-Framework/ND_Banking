@@ -131,7 +131,7 @@
     position: relative;
     margin: auto;
     width: 65%;
-    height: 55%;
+    height: 53%;
     border-radius: 20px;
     box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
 
@@ -199,11 +199,35 @@
     text-align: center;
 }
 .bank-home-boxContent {
+    position: absolute;
     margin: auto;
-    height: 210%;
-    width: 90%;
+    top: 10%;
+    right: 1%;
+    height: 60vh;
+    width: 40%;
     border-radius: 8px;
+    overflow-y: auto;
+}
+.bank-home-boxContent > div {
+    display: grid;
+    grid-template-columns: 1fr 20%;
+    color: #ccc;
+
+    margin: 2% 5%;
+    padding: 2% 5%;
+    height: 10%;
+    width: 80%;
+    background-color: var(--color-main-4);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 12px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.bank-home-boxContent > div:hover {
+    transition: 0.3s;
     box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+}
+.bank-home-boxContent > div > div > h4, .bank-home-boxContent > div > div > p {
+    margin: 0.85vh 0;
 }
 
 .bank-home-transaction > p {
