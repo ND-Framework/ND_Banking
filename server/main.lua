@@ -24,11 +24,11 @@ function payInvoice(invoice, source)
 
     NDCore.Functions.DeductMoney(invoice.amount, source, "bank", "Invoice paid to " .. invoice.sender_name .. ".")
     MySQL.query.await("UPDATE `nd_banking_invoices` SET `status` = 'paid' WHERE `invoice_id` = ?", {invoice.invoice_id})
-    TriggerClientEvent("ND_Banking:updateInvoices", source, getInvoices(account))
+    TriggerClientEvent("ND_Banking:updateInvoices", source, getInvoices(activePlayersAccounts[source]))
 
     local senderCharacter, senderSource = refreshInvoiceSender(invoice.invoice_id)
     if senderSource then
-        NDCore.Functions.AddMoney(invoice.amount, sender, "bank", "Invoice paid by " .. invoice.receiver_name .. ".")
+        NDCore.Functions.AddMoney(invoice.amount, senderSource, "bank", "Invoice paid by " .. invoice.receiver_name .. ".")
     else
         MySQL.query.await("UPDATE characters SET bank = bank + ? WHERE character_id = ? LIMIT 1", {invoice.amount, senderCharacter})
     end
@@ -174,7 +174,7 @@ RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
             if invoice.invoice_id == id then
                 local character = NDCore.Functions.GetPlayer(src)
                 if character.bank < invoice.amount then return end
-                payInvoice(invoice, source)
+                payInvoice(invoice, src)
                 break
             end
         end
