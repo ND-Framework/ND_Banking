@@ -18,6 +18,22 @@ function createPersonalAccount(characterId)
     return number
 end
 
+function payInvoice(invoice, source)
+    local character = NDCore.Functions.GetPlayer(source)
+    if character.bank < invoice.amount then return end
+
+    NDCore.Functions.DeductMoney(invoice.amount, source, "bank", "Invoice paid to " .. invoice.sender_name .. ".")
+    MySQL.query.await("UPDATE `nd_banking_invoices` SET `status` = 'paid' WHERE `invoice_id` = ?", {invoice.invoice_id})
+    TriggerClientEvent("ND_Banking:updateInvoices", source, getInvoices(account))
+
+    local senderCharacter, senderSource = refreshInvoiceSender(invoice.invoice_id)
+    if senderSource then
+        NDCore.Functions.AddMoney(invoice.amount, sender, "bank", "Invoice paid by " .. invoice.receiver_name .. ".")
+    else
+        MySQL.query.await("UPDATE characters SET bank = bank + ? WHERE character_id = ? LIMIT 1", {invoice.amount, senderCharacter})
+    end
+end
+
 function getInvoices(number)
     local invoices = {
         requests = {},
@@ -46,7 +62,15 @@ function getInvoices(number)
         end
     end
 
-    return invoices
+    local unpaidInvoices = {}
+    local time = os.time()
+    for _, invoice in pairs(invoices.unpaid) do
+        if tonumber(invoice.due_in) < time then
+            unpaidInvoices[#unpaidInvoices+1] = invoice
+        end
+    end
+
+    return invoices, unpaidInvoices
 end
 
 function sortHistory(...)  
@@ -89,6 +113,34 @@ function transactionHistory(account, update)
     return accountHisory
 end
 
+function refreshInvoiceSender(invoiceId)
+    local invoiceSender = MySQL.scalar.await("SELECT `sender_account` FROM `nd_banking_invoices` WHERE `invoice_id` = ?", {invoiceId})
+    local invoiceCharacter = MySQL.scalar.await("SELECT `owner` FROM `nd_banking_accounts` WHERE `account_number` = ?", {invoiceSender})
+    for accountSource, accountNumber in pairs(activePlayersAccounts) do
+        if accountNumber == invoiceSender then
+            TriggerClientEvent("ND_Banking:updateInvoices", accountSource, getInvoices(accountNumber))
+            return invoiceCharacter, accountSource
+        end
+    end
+    return invoiceCharacter
+end
+
+function getInvoiceReceiverName(account)
+    for accountSource, accountNumber in pairs(activePlayersAccounts) do
+        if accountNumber == account then
+            local character = NDCore.Functions.GetPlayer(accountSource)
+            if not character then break end
+            return ("%s %s"):format(character.firstName, character.lastName), accountSource
+        end
+    end
+
+    local receiver = MySQL.scalar.await("SELECT `owner` FROM `nd_banking_accounts` WHERE `account_number` = ?", {account})
+    if not receiver then return end
+    local receiverNames = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {receiver})
+    if not receiverNames or not receiverNames[1] then return end 
+    return ("%s %s"):format(receiverNames[1].first_name, receiverNames[1].last_name)
+end
+
 RegisterNetEvent("ND:moneyChange", function(player, moneyType, amount, action, description)
     if moneyType ~= "bank" then return end
     if action == "set" then return end
@@ -110,37 +162,6 @@ RegisterNetEvent("ND:characterLoaded", function(character)
     TriggerClientEvent("ND_Banking:bankInfo", character.source, bank, getInvoices(bank), transactionHistory(bank))
 end)
 
-lib.callback.register("ND_Banking:getInfo", function(source)
-    if not activePlayersAccounts[source] then
-        local character = NDCore.Functions.GetPlayer(source)
-        if not character then return end
-        local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {character.id})
-        if not bank then
-            bank = createPersonalAccount(character.id)
-        end
-        activePlayersAccounts[source] = bank
-    end
-    local account = activePlayersAccounts[source]
-    return account, getInvoices(account), transactionHistory(account)
-end)
-
-lib.callback.register("ND_Banking:action", function(source, action, amount)
-    local amount = tonumber(amount)
-    if not action or not amount or not (action == "Deposit" or action == "Withdraw") then return end
-    local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
-    return success
-end)
-
-function refreshInvoiceSender(invoiceId)
-    local invoiceSender = MySQL.scalar.await("SELECT `sender_account` FROM `nd_banking_invoices` WHERE `invoice_id` = ?", {invoiceId})
-    for accountSource, accountNumber in pairs(activePlayersAccounts) do
-        if accountNumber == invoiceSender then
-            TriggerClientEvent("ND_Banking:updateInvoices", accountSource, getInvoices(accountNumber))
-            return accountSource
-        end
-    end
-end
-
 RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
     local src = source
     local account = activePlayersAccounts[src]
@@ -153,15 +174,7 @@ RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
             if invoice.invoice_id == id then
                 local character = NDCore.Functions.GetPlayer(src)
                 if character.bank < invoice.amount then return end
-
-                NDCore.Functions.DeductMoney(invoice.amount, src, "bank", "Invoice paid to " .. invoice.sender_name .. ".")
-                MySQL.query.await("UPDATE `nd_banking_invoices` SET `status` = 'paid' WHERE `invoice_id` = ?", {invoice.invoice_id})
-                TriggerClientEvent("ND_Banking:updateInvoices", src, getInvoices(account))
-
-                local sender = refreshInvoiceSender(invoice.invoice_id)
-                if not sender then return end
-                NDCore.Functions.AddMoney(invoice.amount, sender, "bank", "Invoice paid by " .. invoice.receiver_name .. ".")
-
+                payInvoice(invoice, source)
                 break
             end
         end
@@ -190,22 +203,6 @@ RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
         end
     end
 end)
-
-function getInvoiceReceiverName(account)
-    for accountSource, accountNumber in pairs(activePlayersAccounts) do
-        if accountNumber == account then
-            local character = NDCore.Functions.GetPlayer(accountSource)
-            if not character then break end
-            return ("%s %s"):format(character.firstName, character.lastName), accountSource
-        end
-    end
-
-    local receiver = MySQL.scalar.await("SELECT `owner` FROM `nd_banking_accounts` WHERE `account_number` = ?", {account})
-    if not receiver then return end
-    local receiverNames = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {receiver})
-    if not receiverNames or not receiverNames[1] then return end 
-    return ("%s %s"):format(receiverNames[1].first_name, receiverNames[1].last_name)
-end
 
 RegisterNetEvent("ND_Banking:createInvoice", function(account, amount, due)
     local src = source
@@ -237,4 +234,48 @@ RegisterNetEvent("ND_Banking:createInvoice", function(account, amount, due)
     TriggerClientEvent("ND_Banking:updateInvoices", src, getInvoices(sender), true)
     if not receiverSource then return end
     TriggerClientEvent("ND_Banking:updateInvoices", receiverSource, getInvoices(account))
+end)
+
+lib.callback.register("ND_Banking:getInfo", function(source)
+    if not activePlayersAccounts[source] then
+        local character = NDCore.Functions.GetPlayer(source)
+        if not character then return end
+        local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {character.id})
+        if not bank then
+            bank = createPersonalAccount(character.id)
+        end
+        activePlayersAccounts[source] = bank
+    end
+    local account = activePlayersAccounts[source]
+    return account, getInvoices(account), transactionHistory(account)
+end)
+
+lib.callback.register("ND_Banking:action", function(source, action, amount)
+    local amount = tonumber(amount)
+    if not action or not amount or not (action == "Deposit" or action == "Withdraw") then return end
+    local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
+    return success
+end)
+
+lib.callback.register("ND_Banking:transferMoney", function(source, account, amount, message)
+    local playerAccount = activePlayersAccounts[source]
+    if not playerAccount or not amount then return "Error: an issue occurred, try again later." end
+
+    
+    for receiver, number in pairs(activePlayersAccounts) do
+        if number == account then
+            local character = NDCore.Functions.GetPlayer(source)
+            local receiverCharacter = NDCore.Functions.GetPlayer(receiver)
+
+            local senderMessage = ("Bank transfer to %s %s (%s)%s"):format(receiverCharacter.firstName, receiverCharacter.lastName, number, (message and message ~= "") and ": " .. message or "")
+            local receiverMessage = ("Bank transfer from %s %s (%s)%s"):format(character.firstName, character.lastName, playerAccount, (message and message ~= "") and ": " .. message or "")
+
+            local success = NDCore.Functions.TransferBank(amount, source, receiver, senderMessage, receiverMessage)
+            if not success then
+                return "Error: an issue occurred, try again later."
+            end
+            return ("Success: transfer of $%s sent to %s %s"):format(amount, receiverCharacter.firstName, receiverCharacter.lastName)
+        end
+    end
+    return "Error: no active account with this number not found."
 end)

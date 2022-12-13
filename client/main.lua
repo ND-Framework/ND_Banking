@@ -21,6 +21,15 @@ RegisterNUICallback("createInvoice", function(data)
     TriggerServerEvent("ND_Banking:createInvoice", data.account, tonumber(data.amount), data.due)
 end)
 
+RegisterNUICallback("transferMoney", function(data)
+    lib.callback("ND_Banking:transferMoney", false, function(result)
+        SendNUIMessage({
+            type = "transferMessage",
+            message = result
+        })
+    end, data.account, tonumber(data.amount), data.message)
+end)
+
 RegisterNUICallback("action", function(data)
     lib.callback("ND_Banking:action", false, function(result)
         local character = NDCore.Functions.GetSelectedCharacter()

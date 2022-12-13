@@ -196,6 +196,14 @@ function createTransactionNotification(txt) {
         notification.fadeOut();
     }, 2500);   
 }
+function createTransferNotification(txt) {
+    const notification = $("#transferNotification");
+    notification.text(txt);
+    notification.fadeIn();
+    setTimeout(() => {
+        notification.fadeOut();
+    }, 2500);   
+}
 
 window.addEventListener("message", function(event) {
     const item = event.data;
@@ -243,6 +251,10 @@ window.addEventListener("message", function(event) {
             $("#createInvoice-account").val("");
             $(".bank-invoice-creator > input").val("");
         }
+    }
+
+    if (item.type === "transferMessage") {
+        createTransferNotification(item.message);
     }
 
 });
@@ -317,7 +329,7 @@ $(".bank-invoice-button-sent").click(function() {
 $(".bank-home-transaction > div > button").click(function() {
     const amount = $(".bank-home-transaction > input").val()
     if (!amount || amount == "") {
-        createTransactionNotification("Error: no value found.")
+        createTransactionNotification("Error: no value found!")
         return;
     };
     $.post(`https://${GetParentResourceName()}/action`, JSON.stringify({
@@ -332,13 +344,30 @@ $(".bank-invoice-creator > button").click(function() {
     const account = $("#createInvoice-account").val();
     const due = $(".bank-invoice-creator > input").val();
     if (!amount || amount == "" || !account || account == "" || !due || due == "") {
-        createInvoiceNotification("Error: all fields required.")
+        createInvoiceNotification("Error: all fields required!")
         return
     };
     $.post(`https://${GetParentResourceName()}/createInvoice`, JSON.stringify({
         amount: amount,
         account: account,
         due: due
+    }));
+});
+
+$(".bank-transfer > button").click(function() {
+    const account = $("#transferAccount").val();
+    const amount = $("#transferAmount").val();
+    const message = $("#transferMessage").val();
+    if (!account || account == "") {
+        createTransferNotification("Error: account number missing!")
+        return
+    } else if (!amount || amount == "") {
+        createTransferNotification("Error: amount missing!")
+    };
+    $.post(`https://${GetParentResourceName()}/transferMoney`, JSON.stringify({
+        account: account,
+        amount: amount,
+        message: message
     }));
 });
 

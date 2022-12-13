@@ -443,11 +443,60 @@
     width: 30%;
     text-align: center;
 }
+#transferNotification {
+    display: none;
+    position: absolute;
+    margin: 0;
 
+    top: 15%;
+    left: 22vw;
+    width: 50%;
+
+    color: var(--color-theme-3);
+    font-size: 2ch;
+    text-align: center;
+}
 
 .bank-transfer {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: repeat(5, 5%);
+    row-gap: 1.5%;
+    width: 50%;
     height: 80vh;
+    margin: 15% auto 0 auto;
+}
+.bank-transfer > input {
+    padding: 1% 2%;
+    border-radius: 8px;
+    outline: none;
+    background: none;
+    background-color: var(--color-main-4);
+    border: none;
+    color: var(--color-theme-3);
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+    font-size: 1.85ch;
+}
+.bank-transfer > input::placeholder {
+    color: #ccc;
+}
+.bank-transfer > input[type=number]::-webkit-inner-spin-button {
+    appearance: none;
+}
+.bank-transfer > button {
+    margin: 2% auto;
+    height: 100%;
+    width: 50%;
+    background-color: var(--color-main-3);
+    color: var(--color-theme-3);
+    border: none;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    transition: 0.2s;
+}
+.bank-transfer > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+    opacity: 0.6;
 }
