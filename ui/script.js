@@ -1,3 +1,31 @@
+const formatter = new Intl.RelativeTimeFormat("en", {
+    numeric: 'auto'
+})
+
+const DIVISIONS = [
+    { amount: 60, name: "seconds" },
+    { amount: 60, name: "minutes" },
+    { amount: 24, name: "hours" },
+    { amount: 7, name: "days" },
+    { amount: 4.34524, name: "weeks" },
+    { amount: 12, name: "months" },
+    { amount: Number.POSITIVE_INFINITY, name: "years" }
+]
+
+function formatTimeAgo(date) {
+    let duration = (date - new Date()) / 1000
+
+    for (let i = 0; i <= DIVISIONS.length; i++) {
+        const division = DIVISIONS[i]
+        if (Math.abs(duration) < division.amount) {
+            return formatter.format(Math.round(duration), division.name).replace("seconds", "sec").replace("second", "sec").replace("minutes", "min").replace("minute", "min").replace("hours", "hr").replace("hour", "hr");
+        }
+        duration /= division.amount
+    }
+}
+// const currentDate = new Date()
+// console.log(formatTimeAgo(new Date().setTime(1670366363*1000)))
+
 function closePage() {
     $(".bank").fadeOut("fast");
     $.post(`https://${GetParentResourceName()}/close`);
@@ -8,8 +36,239 @@ function closePage() {
     });
     $(".bank-home, .bank-invoice, bank-transfer").hide();
 }
+
+document.onkeyup = function(data) { 
+    if (data.which == 27) {
+        closePage()
+        return;
+    };
+};
+
+let invoicesViewing = "pending"
+let invoices = {}
+
+function showInvoices(invoiceType) {
+    invoicesViewing = invoiceType
+    const invoice = invoices[invoiceType]
+    $(".bank-invoice-box").empty();
+    const currentDate = new Date()
+    if (invoiceType == "requests") {
+        for (let i = 0; i < invoice.length; i++) {
+            $(".bank-invoice-box").append(`
+                <div>
+                    <div>
+                        <h4>From:</h4>
+                        <p>${invoice[i].sender_name}</p>
+                    </div>
+                    <div>
+                        <h4>Amount:</h4>
+                        <p>$${invoice[i].amount}</p>
+                    </div>
+                    <div>
+                        <h4>Due in:</h4>
+                        <p>${formatTimeAgo(currentDate.setTime(invoice[i].due_in*1000))}</p>
+                    </div>
+                    <div>
+                        <button data-invoice="${invoice[i].invoice_id}">Accept</button>
+                        <button data-invoice="${invoice[i].invoice_id}">Reject</button>
+                    </div>
+                </div>
+            `);
+        }
+        $(".bank-invoice-box > div").css("grid-template-columns", "40% 25% 20% 1fr");
+    } else if (invoiceType == "unpaid") {
+        for (let i = 0; i < invoice.length; i++) {
+            $(".bank-invoice-box").append(`
+                <div>
+                    <div>
+                        <h4>From:</h4>
+                        <p>${invoice[i].sender_name}</p>
+                    </div>
+                    <div>
+                        <h4>Amount:</h4>
+                        <p>$${invoice[i].amount}</p>
+                    </div>
+                    <div>
+                        <h4>Due in:</h4>
+                        <p>${formatTimeAgo(currentDate.setTime(invoice[i].due_in*1000))}</p>
+                    </div>
+                    <div>
+                        <button style="margin: 25% auto" data-invoice="${invoice[i].invoice_id}">Pay</button>
+                    </div>
+                </div>
+            `);
+        }
+        $(".bank-invoice-box > div").css("grid-template-columns", "40% 25% 20% 1fr");
+    } else if (invoiceType == "paid") {
+        for (let i = 0; i < invoice.length; i++) {
+            $(".bank-invoice-box").append(`
+                <div>
+                    <div>
+                        <h4>From:</h4>
+                        <p>${invoice[i].sender_name}</p>
+                    </div>
+                    <div>
+                        <h4>Amount:</h4>
+                        <p>$${invoice[i].amount}</p>
+                    </div>
+                    <div>
+                        <h4>Due in:</h4>
+                        <p>${formatTimeAgo(currentDate.setTime(invoice[i].due_in*1000))}</p>
+                    </div>
+                </div>
+            `);
+        }
+        $(".bank-invoice-box > div").css("grid-template-columns", "40% 30% 30%");
+    } else if (invoiceType == "sent") {
+        for (let i = 0; i < invoice.length; i++) {
+            $(".bank-invoice-box").append(`
+                <div>
+                    <div>
+                        <h4>To:</h4>
+                        <p>${invoice[i].receiver_name}</p>
+                    </div>
+                    <div>
+                        <h4>Amount:</h4>
+                        <p>$${invoice[i].amount}</p>
+                    </div>
+                    <div>
+                        <h4>Due in:</h4>
+                        <p>${formatTimeAgo(currentDate.setTime(invoice[i].due_in*1000))}</p>
+                    </div>
+                    <div>
+                        <h4>Status:</h4>
+                        <p>${invoice[i].status}</p>
+                    </div>
+                </div>
+            `);
+        }
+        $(".bank-invoice-box > div").css("grid-template-columns", "40% 20% 20% 20%");
+    }
+
+};
+
+function getStyle(action) {
+    if (action === "set") {
+        return '<i class="fa-regular fa-circle-question" style="color: rgb(0, 100, 250);"></i>'
+    } else if (action === "add") {
+        return '<i class="fa-solid fa-chevron-up" style="color: rgb(100, 250, 0);"></i>'
+    } else if (action === "remove") {
+        return '<i class="fa-solid fa-chevron-down" style="color: rgb(250, 50, 50);"></i>'
+    }
+}
+function getAction(action, amount) {
+    if (action === "add") {
+        return `<i style="color: rgb(100, 250, 0);">+</i> $${amount}`
+    } else if (action === "remove") {
+        return `<i style="color: rgb(250, 50, 50);">-</i> $${amount}`
+    }
+}
+function updateHistory(history) {
+    $(".bank-home-boxContent").empty();
+    const currentDate = new Date()
+    for (let i = 0; i < history.length; i++) {
+        const item = history[i]
+        $(".bank-home-boxContent").prepend(`
+            <div>
+                <div>
+                    <h4>${getAction(item.action, item.amount)}</h4>
+                    <p>${item.description || ""}</p>
+                </div>
+                <p>${formatTimeAgo(currentDate.setTime(item.time*1000))}</p>
+            </div>
+        `);
+    }
+}
+
+function createInvoiceNotification(txt) {
+    const notification = $("#createInvoiceNitification");
+    notification.text(txt);
+    notification.fadeIn();
+    setTimeout(() => {
+        notification.fadeOut();
+    }, 2500);   
+}
+function createTransactionNotification(txt) {
+    const notification = $("#transactionNotification");
+    notification.text(txt);
+    notification.fadeIn();
+    setTimeout(() => {
+        notification.fadeOut();
+    }, 2500);   
+}
+
+window.addEventListener("message", function(event) {
+    const item = event.data;
+
+    if (item.type === "display") {
+        if (item.status) {
+            $("#homeButton").css({
+                "background-color": "var(--color-main-4)",
+                "color": "var(--color-theme-3)",
+                "box-shadow": "rgba(0, 0, 0, 0.1) 0px 4px 12px"
+            });
+            $(".bank-home").show();
+            $(".bank").fadeIn();
+        } else {
+            $(".bank").fadeOut();
+        }
+    }
+
+    if (item.type === "bankInfo") {
+        $(".bank-home-card-name").text(item.name);
+        $(".bank-home-card-balance").text(`$${item.personalAccountBalance}`);
+        $(".bank-home-card-number").empty();
+        $(".bank-home-card-number").append(`<span class="tooltiptext">Copy</span>${item.personalAccountNumber.match(/.{1,4}/g).join(' ')}`);
+        invoices = item.invoices;
+        showInvoices("requests");
+        updateHistory(item.history);
+    }
+
+    if (item.type === "action") {
+        $(".bank-home-card-balance").text(`$${item.personalAccountBalance}`);
+        if (!item.result) {
+            createTransactionNotification("Error: unable to complete action.")
+        }
+    }
+
+    if (item.type === "updateHistory") {
+        updateHistory(item.history);
+    }
+
+    if (item.type === "updateInvoices") {
+        invoices = item.invoices;
+        showInvoices(invoicesViewing);
+        if (item.create) {
+            $("#createInvoice-amount").val("");
+            $("#createInvoice-account").val("");
+            $(".bank-invoice-creator > input").val("");
+        }
+    }
+
+});
+
 $(".bank").hide();
 $(".bank-invoice, .bank-transfer").hide();
+
+// $("body").get(0).style.setProperty("--color-theme-1", "#591515");
+// $("body").get(0).style.setProperty("--color-theme-2", "#992525");
+// $("body").get(0).style.setProperty("--color-theme-3", "#e90606");
+
+$(".bank-home-card-number").click(function() {
+    const copyFrom = $("<textarea/>");
+    copyFrom.text($(this).text().replace("Copy", ""));
+    $("body").append(copyFrom);
+    copyFrom.select();
+    document.execCommand("copy");
+    copyFrom.remove();
+
+    // navigator.clipboard.writeText($(this).text().replace("Copy", ""));
+    $(".bank-home-card-number > span").text("Copied!");
+});
+$(".bank-home-card-number").mouseout(function() {
+    $(".bank-home-card-number > span").text("Copy");
+});
+
 $(".bank-nav > button").click(function() {
     const thisElement = $(this);
     const page = thisElement.data("page");
@@ -31,4 +290,61 @@ $(".bank-nav > button").click(function() {
     });
     $(".bank-home, .bank-invoice, .bank-transfer").hide();
     thisPage.fadeIn();
+});
+
+$(".bank-invoice-button-requests").css("opacity", "1");
+$(".bank-invoice-button-requests").click(function() {
+    showInvoices("requests");
+    $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
+    $(this).css("opacity", "1");
+});
+$(".bank-invoice-button-unpaid").click(function() {
+    showInvoices("unpaid");
+    $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
+    $(this).css("opacity", "1");
+});
+$(".bank-invoice-button-paid").click(function() {
+    showInvoices("paid");
+    $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
+    $(this).css("opacity", "1");
+});
+$(".bank-invoice-button-sent").click(function() {
+    showInvoices("sent");
+    $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
+    $(this).css("opacity", "1");
+});
+
+$(".bank-home-transaction > div > button").click(function() {
+    const amount = $(".bank-home-transaction > input").val()
+    if (!amount || amount == "") {
+        createTransactionNotification("Error: no value found.")
+        return;
+    };
+    $.post(`https://${GetParentResourceName()}/action`, JSON.stringify({
+        action: $(this).text(),
+        amount: amount
+    }));
+    $(".bank-home-transaction > input").val("")
+});
+
+$(".bank-invoice-creator > button").click(function() {
+    const amount = $("#createInvoice-amount").val();
+    const account = $("#createInvoice-account").val();
+    const due = $(".bank-invoice-creator > input").val();
+    if (!amount || amount == "" || !account || account == "" || !due || due == "") {
+        createInvoiceNotification("Error: all fields required.")
+        return
+    };
+    $.post(`https://${GetParentResourceName()}/createInvoice`, JSON.stringify({
+        amount: amount,
+        account: account,
+        due: due
+    }));
+});
+
+$(document).on("click", ".bank-invoice-box > div > div > button", function() {
+    $.post(`https://${GetParentResourceName()}/interactInvoice`, JSON.stringify({
+        type: $(this).text(),
+        id: $(this).data("invoice")
+    }));
 });
