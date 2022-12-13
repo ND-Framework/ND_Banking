@@ -11,10 +11,10 @@
         <div class="bank">
             <div class="bank-nav">
                 <img src="img/NDLogoSilver.png">
-                <button id="homeButton" data-page="home"><i class="fa-solid fa-house-user"></i> Home</button>
-                <button data-page="invoice"><i style="margin-left: 7%;" class="fa-solid fa-file-invoice"></i> Invoices</button>
+                <button data-page="home" id="homeButton"><i class="fa-solid fa-house-user"></i> Home</button>
+                <button data-page="invoice"><i class="fa-solid fa-file-invoice" style="margin-left: 7%;"></i> Invoices</button>
                 <button data-page="transfer"><i class="fa-solid fa-money-bill-transfer"></i> Transfer</button>
-                <button id="exitButton" data-page="close"><i class="fa-solid fa-right-from-bracket"></i> Close</button>
+                <button data-page="close" id="exitButton"><i class="fa-solid fa-right-from-bracket"></i> Close</button>
             </div>
             <div class="bank-home">
                 <div class="bank-home-card">
@@ -31,8 +31,9 @@
                     <div class="bank-home-boxContent"></div>
                 </div>
                 <div class="bank-home-transaction">
+                    <p id="transactionNotification"></p>
                     <input type="number" placeholder="Amount">
-                    <p>$</p>
+                    <p id="bank-home-transaction-currency">$</p>
                     <div>
                         <button>Deposit</button><button>Withdraw</button>
                     </div>
@@ -41,17 +42,19 @@
             <div class="bank-invoice">
                 <div class="bank-invoice-top">
                     <p>Create invoice:</p>
+                    <p id="createInvoiceNitification"></p>
                 </div>
                 <div class="bank-invoice-top">
                     <p>Invoices:</p>
                     <div>
-                        <button class="bank-invoice-button-unpaid">Unpaid</button><button class="bank-invoice-button-paid">Paid</button><button class="bank-invoice-button-sent">Sent</button>
+                        <button class="bank-invoice-button-requests">Requests</button><button class="bank-invoice-button-unpaid">Unpaid</button><button class="bank-invoice-button-paid">Paid</button><button class="bank-invoice-button-sent">Sent</button>
                     </div>
                 </div>
                 <div class="bank-invoice-creator">
                     <div>
-                        <input type="number" placeholder="Account number"><input type="number" placeholder="Amount">
+                        <input id="createInvoice-account" type="number" placeholder="Account number"><input id="createInvoice-amount" type="number" placeholder="Amount">
                     </div>
+                    <input type="number" placeholder="Days to pay" min="1">
                     <button>Send</button>
                 </div>
                 <div class="bank-invoice-box"></div>
