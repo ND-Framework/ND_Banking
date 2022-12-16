@@ -39,7 +39,15 @@ function closePage() {
 
 document.onkeyup = function(data) { 
     if (data.which == 27) {
-        closePage()
+        const atm = $(".atm");
+        if (atm.css("display") != "none") {
+            atm.fadeOut("fast");
+            atm.css("scale", "0");
+            $.post(`https://${GetParentResourceName()}/close`);
+        }
+        if ($(".bank").css("display") != "none") {
+            closePage();
+        }
         return;
     };
 };
@@ -180,24 +188,14 @@ function updateHistory(history) {
     }
 }
 
-function createInvoiceNotification(txt) {
-    const notification = $("#createInvoiceNitification");
-    notification.text(txt);
-    notification.fadeIn();
-    setTimeout(() => {
-        notification.fadeOut();
-    }, 2500);   
+const notifications = {
+    "invoice":"#createInvoiceNitification",
+    "transaction":"#transactionNotification",
+    "transfer":"#transferNotification",
+    "atm":"#atm-transactionNotification"
 }
-function createTransactionNotification(txt) {
-    const notification = $("#transactionNotification");
-    notification.text(txt);
-    notification.fadeIn();
-    setTimeout(() => {
-        notification.fadeOut();
-    }, 2500);   
-}
-function createTransferNotification(txt) {
-    const notification = $("#transferNotification");
+function createNotification(type, txt) {
+    const notification = $(notifications[type]);
     notification.text(txt);
     notification.fadeIn();
     setTimeout(() => {
@@ -235,7 +233,7 @@ window.addEventListener("message", function(event) {
     if (item.type === "action") {
         $(".bank-home-card-balance").text(`$${item.personalAccountBalance}`);
         if (!item.result) {
-            createTransactionNotification("Error: unable to complete action.")
+            createNotification("transaction", "Error: unable to complete action.")
         }
     }
 
@@ -254,13 +252,29 @@ window.addEventListener("message", function(event) {
     }
 
     if (item.type === "transferMessage") {
-        createTransferNotification(item.message);
+        createNotification("transfer", item.message);
+    }
+
+    if (item.type === "atmValues") {
+        item.values.forEach(function (value, i) {
+            $(".atm-transactionValues").append(`<button data-id"${i+1}">${value}</button>`)
+        });
+    }
+
+    if (item.type === "displayATM") {
+        const atm = $(".atm");
+        if (item.status) {
+            atm.fadeIn("fast");
+            atm.css("scale", "1");
+        } else {
+            atm.fadeOut("fast");
+            atm.css("scale", "0");
+        }
     }
 
 });
 
-$(".bank").hide();
-$(".bank-invoice, .bank-transfer").hide();
+$(".bank, .atm, .bank-invoice, .bank-transfer").hide();
 
 // $("body").get(0).style.setProperty("--color-theme-1", "#591515");
 // $("body").get(0).style.setProperty("--color-theme-2", "#992525");
@@ -329,7 +343,7 @@ $(".bank-invoice-button-sent").click(function() {
 $(".bank-home-transaction > div > button").click(function() {
     const amount = $(".bank-home-transaction > input").val()
     if (!amount || amount == "") {
-        createTransactionNotification("Error: no value found!")
+        createNotification("transaction", "Error: no value found!")
         return;
     };
     $.post(`https://${GetParentResourceName()}/action`, JSON.stringify({
@@ -344,7 +358,7 @@ $(".bank-invoice-creator > button").click(function() {
     const account = $("#createInvoice-account").val();
     const due = $(".bank-invoice-creator > input").val();
     if (!amount || amount == "" || !account || account == "" || !due || due == "") {
-        createInvoiceNotification("Error: all fields required!")
+        createNotification("invoice", "Error: all fields required!")
         return
     };
     $.post(`https://${GetParentResourceName()}/createInvoice`, JSON.stringify({
@@ -359,10 +373,10 @@ $(".bank-transfer > button").click(function() {
     const amount = $("#transferAmount").val();
     const message = $("#transferMessage").val();
     if (!account || account == "") {
-        createTransferNotification("Error: account number missing!")
+        createNotification("transfer", "Error: account number missing!")
         return
     } else if (!amount || amount == "") {
-        createTransferNotification("Error: amount missing!")
+        createNotification("transfer", "Error: amount missing!")
     };
     $.post(`https://${GetParentResourceName()}/transferMoney`, JSON.stringify({
         account: account,
@@ -376,4 +390,21 @@ $(document).on("click", ".bank-invoice-box > div > div > button", function() {
         type: $(this).text(),
         id: $(this).data("invoice")
     }));
+});
+
+$(document).on("click", ".atm-transactionValues > button", function() {
+    $(".atm-transactionValues > button").css({
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "var(--color-theme-2)",
+        "border": "var(--color-theme-2) 1px solid",
+        "box-shadow": "rgba(0, 0, 0, 0.2) 0px 0px 12px",
+        "opacity": "0.6"
+    });
+    $(this).css({
+        "background-color": "var(--color-main-3)",
+        "color": "var(--color-theme-3)",
+        "border": "var(--color-theme-3) 1px solid",
+        "box-shadow": "rgba(0, 0, 0, 0.3) 0px 0px 12px",
+        "opacity": "1"
+    });
 });

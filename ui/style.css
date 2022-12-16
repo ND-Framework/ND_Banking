@@ -73,6 +73,79 @@
     opacity: 1;
 }
 
+
+.atm {
+    scale: 0;
+    position: absolute;
+    margin: auto;
+    inset: 0;
+    width: 30vw;
+    height: fit-content;
+    border-radius: 15px;
+    background: var(--color-main-2);
+    background: linear-gradient(135deg, rgba(22,38,64,1) -50%, rgba(44,75,125,1) 150%);
+    overflow: hidden;
+    box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+    transition: 0.2s;
+}
+.atm-transactionValues {
+    margin: 5% auto 2% auto;
+    width: 93.35%;
+}
+.atm-transactionValues > button {
+    opacity: 0.6;
+    margin: 1%;
+    width: 8.77441vw;
+    height: 3.5vh;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--color-theme-2);
+    border: var(--color-theme-2) 1px solid;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    transition: 0.2s;
+}
+.atm-transactionValues > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    background-color: var(--color-main-3) !important;
+    color: var(--color-theme-3) !important;
+    border: var(--color-theme-3) 1px solid !important;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px !important;
+}
+#atm-transactionNotification {
+    position: absolute;
+    left: 15%;
+    width: 70%;
+    margin: auto;
+    color: var(--color-theme-3);
+    font-size: 2ch;
+    text-align: center;
+}
+.atm-transactionButtons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 5%;
+    width: 40%;
+    height: 3.5vh;
+    margin: 7% auto 5% auto;
+}
+.atm-transactionButtons > button {
+    background-color: var(--color-main-3);
+    color: var(--color-theme-3);
+    border: none;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 12px;
+    font-size: 1.85ch;
+    transition: 0.2s;
+}
+.atm-transactionButtons > button:hover {
+    transition: 0.3s;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
+    opacity: 0.6;
+}
+
 .bank {
     display: grid;
     grid-template-columns: 13% 1fr;

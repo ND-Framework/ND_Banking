@@ -103,6 +103,10 @@ AddEventHandler("onResourceStart", function(resourceName)
         return
     end
     Wait(2000)
+    SendNUIMessage({
+        type = "atmValues",
+        values = config.ATM
+    })
 
     lib.callback("ND_Banking:getInfo", false, function(bank, invoices, history)
         if not bank then return end
@@ -165,6 +169,14 @@ end)
 RegisterCommand("bank", function(source, args, rawCommand)
     SendNUIMessage({
         type = "display",
+        status = true
+    })
+    SetNuiFocus(true, true)
+end, false)
+
+RegisterCommand("atm", function(source, args, rawCommand)
+    SendNUIMessage({
+        type = "displayATM",
         status = true
     })
     SetNuiFocus(true, true)
