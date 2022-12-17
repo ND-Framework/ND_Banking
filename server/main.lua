@@ -257,6 +257,13 @@ lib.callback.register("ND_Banking:action", function(source, action, amount)
     return success
 end)
 
+lib.callback.register("ND_Banking:actionATM", function(source, action, amount)
+    local amount = tonumber(config.ATM[amount])
+    if not action or not amount or not (action == "Deposit" or action == "Withdraw") then return end
+    local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
+    return success
+end)
+
 lib.callback.register("ND_Banking:transferMoney", function(source, account, amount, message)
     local playerAccount = activePlayersAccounts[source]
     if not playerAccount or not amount then return "Error: an issue occurred, try again later." end

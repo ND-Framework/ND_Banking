@@ -81,6 +81,16 @@ RegisterNUICallback("clickATM", function(data)
     selectedATM = data.value
     animationATM("click")
 end)
+RegisterNUICallback("interactATM", function(data)
+    lib.callback("ND_Banking:actionATM", false, function(result)
+        local character = NDCore.Functions.GetSelectedCharacter()
+        SendNUIMessage({
+            type = "actionATM",
+            personalAccountBalance = character.bank,
+            result = result
+        })
+    end, data.interaction, selectedATM)
+end)
 
 RegisterNUICallback("close", function(data)
     SetNuiFocus(false, false)
