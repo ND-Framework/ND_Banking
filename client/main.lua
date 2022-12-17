@@ -3,7 +3,14 @@ NDCore = exports["ND_Core"]:GetCoreObject()
 local ped = PlayerPedId()
 local pedCoords = GetEntityCoords(ped)
 local text = false
-
+local nearATM = false
+local selectedATM = 0
+local atmModels = {
+    `prop_atm_01`,  -- older atms
+    `prop_atm_02`,  -- blue atm
+    `prop_atm_03`,  -- red atm
+    `prop_fleeca_atm`  -- green atm
+}
 local banks = {
     {
         coords = vector3(1175.77, 2706.89, 38.09), -- harmony fleeca bank
@@ -34,11 +41,56 @@ local banks = {
         name = "Fleeca Bank"
     }
 }
+local fixAnim = false
 
-RegisterNUICallback("close", function()
+function animationATM(task)
+    local animDict = "random@atmrobberygen@male"
+    RequestAnimDict(animDict)
+    repeat Wait(0) until HasAnimDictLoaded(animDict)
+    if task == "enter" then
+        TaskPlayAnim(ped, animDict, "enter", 8.0, -8.0, 4000, 0, 0, false, false, false)
+        Wait(4000)
+        TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+    end
+    if task == "click" then
+        if fixAnim then return end
+        TaskPlayAnim(ped, animDict, "idle_a", 8.0, -8.0, 3000, 0, 0, false, false, false)
+        Wait(2500)
+        if fixAnim then return end
+        TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+    end
+    if task == "exit" then
+        fixAnim = true
+        TaskPlayAnim(ped, animDict, "exit", 8.0, -8.0, 5500, 0, 0, false, false, false)
+        Wait(5500)
+        ClearPedTasks(ped)
+        fixAnim = false
+    end
+end
+
+function checkATM()
+    for _, atm in pairs(atmModels) do
+        local object = GetClosestObjectOfType(pedCoords.x, pedCoords.y, pedCoords.z, 0.7, atm, false, false, false)
+        if object ~= 0 then
+            return true, object
+        end
+    end
+end
+
+RegisterNUICallback("clickATM", function(data)
+    selectedATM = data.value
+    animationATM("click")
+end)
+
+RegisterNUICallback("close", function(data)
     SetNuiFocus(false, false)
     PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
-    lib.showTextUI("[E] - Open bank")
+    if data and data.atm then
+        animationATM("exit")
+        lib.showTextUI("[E] - Use ATM")
+    else
+        lib.showTextUI("[E] - Open bank")
+    end
     text = true
 end)
 
@@ -127,6 +179,7 @@ CreateThread(function()
         Wait(1000)
         ped = PlayerPedId()
         pedCoords = GetEntityCoords(ped)
+        nearATM, objectATM = checkATM()
     end
 end)
 
@@ -135,25 +188,48 @@ CreateThread(function()
     while true do
         Wait(wait)
         local near = false
-        for _, bank in pairs(banks) do
-            local dist = #(pedCoords - bank.coords)
-            if dist < 1.8 then
-                near = true
-                if not text then
-                    text = true
-                    lib.showTextUI("[E] - Open bank")
+        
+        if nearATM and not fixAnim then
+            local object = objectATM
+            near = true
+            if not text then
+                text = true
+                lib.showTextUI("[E] - Use ATM")
+            end
+            if IsControlJustPressed(0, 51) then
+                local atmPosition = GetOffsetFromEntityInWorldCoords(object, 0.0, -0.5, 0.0)
+                TaskGoStraightToCoord(ped, atmPosition.x, atmPosition.y, atmPosition.z, 1.0, 1500, GetEntityHeading(object), 0.0)
+                Wait(1500)
+                lib.hideTextUI()
+                animationATM("enter")
+                SendNUIMessage({
+                    type = "displayATM",
+                    status = true
+                })
+                SetNuiFocus(true, true)
+            end
+        else
+            for _, bank in pairs(banks) do
+                local dist = #(pedCoords - bank.coords)
+                if dist < 1.8 then
+                    near = true
+                    if not text then
+                        text = true
+                        lib.showTextUI("[E] - Open bank")
+                    end
+                    if IsControlJustPressed(0, 51) then
+                        lib.hideTextUI()
+                        SendNUIMessage({
+                            type = "display",
+                            status = true
+                        })
+                        SetNuiFocus(true, true)
+                    end
+                    break
                 end
-                if IsControlJustPressed(0, 51) then
-                    lib.hideTextUI()
-                    SendNUIMessage({
-                        type = "display",
-                        status = true
-                    })
-                    SetNuiFocus(true, true)
-                end
-                break
             end
         end
+
         if near then
             wait = 0
         else
@@ -165,19 +241,3 @@ CreateThread(function()
         end
     end 
 end)
-
-RegisterCommand("bank", function(source, args, rawCommand)
-    SendNUIMessage({
-        type = "display",
-        status = true
-    })
-    SetNuiFocus(true, true)
-end, false)
-
-RegisterCommand("atm", function(source, args, rawCommand)
-    SendNUIMessage({
-        type = "displayATM",
-        status = true
-    })
-    SetNuiFocus(true, true)
-end, false)

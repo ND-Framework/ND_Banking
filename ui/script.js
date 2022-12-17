@@ -43,7 +43,9 @@ document.onkeyup = function(data) {
         if (atm.css("display") != "none") {
             atm.fadeOut("fast");
             atm.css("scale", "0");
-            $.post(`https://${GetParentResourceName()}/close`);
+            $.post(`https://${GetParentResourceName()}/close`, JSON.stringify({
+                atm: true
+            }));
         }
         if ($(".bank").css("display") != "none") {
             closePage();
@@ -237,6 +239,22 @@ window.addEventListener("message", function(event) {
         }
     }
 
+    if (item.type === "actionATM") {
+        $(".bank-home-card-balance").text(`$${item.personalAccountBalance}`);
+        if (!item.result) {
+            createNotification("atm", "Error: unable to complete action.")
+        } else {
+            const atm = $(".atm");
+            if (atm.css("display") != "none") {
+                atm.fadeOut("fast");
+                atm.css("scale", "0");
+                $.post(`https://${GetParentResourceName()}/close`, JSON.stringify({
+                    atm: true
+                }));
+            }
+        }
+    }
+
     if (item.type === "updateHistory") {
         updateHistory(item.history);
     }
@@ -257,7 +275,7 @@ window.addEventListener("message", function(event) {
 
     if (item.type === "atmValues") {
         item.values.forEach(function (value, i) {
-            $(".atm-transactionValues").append(`<button data-id"${i+1}">${value}</button>`)
+            $(".atm-transactionValues").append(`<button data-id="${i+1}">${value}</button>`)
         });
     }
 
@@ -392,7 +410,17 @@ $(document).on("click", ".bank-invoice-box > div > div > button", function() {
     }));
 });
 
+$(".atm-transactionButtons > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/interactATM`, JSON.stringify({
+        interaction: $(this).text()
+    }));
+});
+
 $(document).on("click", ".atm-transactionValues > button", function() {
+    const click = $(this)
+    $.post(`https://${GetParentResourceName()}/clickATM`, JSON.stringify({
+        value: click.data("id")
+    }));
     $(".atm-transactionValues > button").css({
         "background-color": "rgba(0, 0, 0, 0)",
         "color": "var(--color-theme-2)",
@@ -400,7 +428,7 @@ $(document).on("click", ".atm-transactionValues > button", function() {
         "box-shadow": "rgba(0, 0, 0, 0.2) 0px 0px 12px",
         "opacity": "0.6"
     });
-    $(this).css({
+    click.css({
         "background-color": "var(--color-main-3)",
         "color": "var(--color-theme-3)",
         "border": "var(--color-theme-3) 1px solid",
