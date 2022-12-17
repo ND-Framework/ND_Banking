@@ -42,6 +42,7 @@ local banks = {
     }
 }
 local fixAnim = false
+local fixClickAnim = false
 
 function animationATM(task)
     local animDict = "random@atmrobberygen@male"
@@ -53,11 +54,13 @@ function animationATM(task)
         TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
     end
     if task == "click" then
-        if fixAnim then return end
+        if fixClickAnim or fixAnim then return end
+        fixClickAnim = true
         TaskPlayAnim(ped, animDict, "idle_a", 8.0, -8.0, 3000, 0, 0, false, false, false)
         Wait(2500)
         if fixAnim then return end
         TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+        fixClickAnim = false
     end
     if task == "exit" then
         fixAnim = true
