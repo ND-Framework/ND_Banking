@@ -1,5 +1,3 @@
-NDCore = exports["ND_Core"]:GetCoreObject()
-
 local ped = PlayerPedId()
 local pedCoords = GetEntityCoords(ped)
 local text = false
