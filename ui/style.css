@@ -245,19 +245,19 @@
     font-size: 2.1ch;
     color: #ccc;
 }
-.bank-home-card > img {
+.bank-home-card-logo {
     position: absolute;
     margin: 0;
     top: 10%;
     right: 5%;
     width: 20%;
 }
+.bank-home-card-shark {
     position: absolute;
     margin: 0;
     right: 6%;
     bottom: 8%;
-    font-size: 2.5ch;
-    color: #ccc;
+    width: 10%;
 }
 
 .bank-home-box {
