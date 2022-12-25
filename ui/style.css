@@ -176,7 +176,7 @@
     color: var(--color-theme-2);
     border: none;
     font-size: 2.25ch;
-    border-radius: 15px;
+    border-radius: 10px;
     transition: 0.2s;
 }
 .bank-nav > button:hover {
@@ -187,7 +187,7 @@
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px !important;
 }
 .bank-nav > img {
-    height: 100%;
+    width: 80%;
     margin: auto;
 }
 #exitButton {
@@ -252,7 +252,6 @@
     right: 5%;
     width: 20%;
 }
-.bank-home-card-visa {
     position: absolute;
     margin: 0;
     right: 6%;

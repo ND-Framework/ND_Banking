@@ -1,5 +1,5 @@
 const formatter = new Intl.RelativeTimeFormat("en", {
-    numeric: 'auto'
+    numeric: "auto"
 })
 
 const DIVISIONS = [
@@ -23,8 +23,6 @@ function formatTimeAgo(date) {
         duration /= division.amount
     }
 }
-// const currentDate = new Date()
-// console.log(formatTimeAgo(new Date().setTime(1670366363*1000)))
 
 function closePage() {
     $(".bank").fadeOut("fast");
@@ -294,10 +292,6 @@ window.addEventListener("message", function(event) {
 
 $(".bank, .atm, .bank-invoice, .bank-transfer").hide();
 
-// $("body").get(0).style.setProperty("--color-theme-1", "#591515");
-// $("body").get(0).style.setProperty("--color-theme-2", "#992525");
-// $("body").get(0).style.setProperty("--color-theme-3", "#e90606");
-
 $(".bank-home-card-number").click(function() {
     const copyFrom = $("<textarea/>");
     copyFrom.text($(this).text().replace("Copy", ""));
@@ -314,6 +308,7 @@ $(".bank-home-card-number").mouseout(function() {
 });
 
 $(".bank-nav > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     const thisElement = $(this);
     const page = thisElement.data("page");
     if (page === "close") {
@@ -338,27 +333,32 @@ $(".bank-nav > button").click(function() {
 
 $(".bank-invoice-button-requests").css("opacity", "1");
 $(".bank-invoice-button-requests").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     showInvoices("requests");
     $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
     $(this).css("opacity", "1");
 });
 $(".bank-invoice-button-unpaid").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     showInvoices("unpaid");
     $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
     $(this).css("opacity", "1");
 });
 $(".bank-invoice-button-paid").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     showInvoices("paid");
     $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
     $(this).css("opacity", "1");
 });
 $(".bank-invoice-button-sent").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     showInvoices("sent");
     $(".bank-invoice-button-requests, .bank-invoice-button-unpaid, .bank-invoice-button-paid, .bank-invoice-button-sent").css("opacity", "0.6");
     $(this).css("opacity", "1");
 });
 
 $(".bank-home-transaction > div > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     const amount = $(".bank-home-transaction > input").val()
     if (!amount || amount == "") {
         createNotification("transaction", "Error: no value found!")
@@ -372,6 +372,7 @@ $(".bank-home-transaction > div > button").click(function() {
 });
 
 $(".bank-invoice-creator > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     const amount = $("#createInvoice-amount").val();
     const account = $("#createInvoice-account").val();
     const due = $(".bank-invoice-creator > input").val();
@@ -387,6 +388,7 @@ $(".bank-invoice-creator > button").click(function() {
 });
 
 $(".bank-transfer > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/sound`);
     const account = $("#transferAccount").val();
     const amount = $("#transferAmount").val();
     const message = $("#transferMessage").val();

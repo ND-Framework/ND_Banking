@@ -83,6 +83,7 @@ RegisterNUICallback("clickATM", function(data)
     animationATM("click")
 end)
 RegisterNUICallback("interactATM", function(data)
+    PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
     lib.callback("ND_Banking:actionATM", false, function(result)
         local character = NDCore.Functions.GetSelectedCharacter()
         SendNUIMessage({
@@ -91,6 +92,10 @@ RegisterNUICallback("interactATM", function(data)
             result = result
         })
     end, data.interaction, selectedATM)
+end)
+
+RegisterNUICallback("sound", function(data)
+    PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
 end)
 
 RegisterNUICallback("close", function(data)
@@ -106,6 +111,7 @@ RegisterNUICallback("close", function(data)
 end)
 
 RegisterNUICallback("interactInvoice", function(data)
+    PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
     TriggerServerEvent("ND_Banking:interactInvoice", data.type:lower(), data.id)
 end)
 
