@@ -1,5 +1,4 @@
 local activePlayersAccounts = {}
-local frozenAccounts = {}
 
 function isAccountNumberAvailable(number)
     local available = not MySQL.scalar.await("SELECT 1 FROM nd_banking_accounts WHERE account_number = ?", {number})
