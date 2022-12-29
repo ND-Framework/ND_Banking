@@ -167,16 +167,11 @@ RegisterNetEvent("ND_Banking:bankInfo", function(bank, invoices, history)
     })
 end)
 
-AddEventHandler("onResourceStart", function(resourceName)
-    if (GetCurrentResourceName() ~= resourceName) then
-        return
-    end
-    Wait(2000)
+function start()
     SendNUIMessage({
         type = "atmValues",
         values = config.ATM
     })
-
     lib.callback("ND_Banking:getInfo", false, function(bank, invoices, history)
         if not bank then return end
         local character = NDCore.Functions.GetSelectedCharacter()
@@ -189,6 +184,17 @@ AddEventHandler("onResourceStart", function(resourceName)
             history = history
         })
     end)
+end
+
+AddEventHandler("playerSpawned", function()
+    start()
+end)
+
+AddEventHandler("onResourceStart", function(resourceName)
+    if (GetCurrentResourceName() ~= resourceName) then
+        return
+    end
+    start()
 end)
 
 CreateThread(function()
