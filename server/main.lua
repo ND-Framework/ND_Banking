@@ -251,14 +251,23 @@ end)
 lib.callback.register("ND_Banking:action", function(source, action, amount)
     local amount = tonumber(amount)
     if not action or not amount or not (action == "Deposit" or action == "Withdraw") then return end
+    if amount > config.maxWithdrawDepositBank then
+        return ("Error: max amount $%s"):format(config.maxWithdrawDepositBank)
+    elseif amount < config.minWithdrawDepositBank then
+        return ("Error: min amount $%s"):format(config.minWithdrawDepositBank)
+    end
+
+    if action == "Withdraw" and isAccountLocked(activePlayersAccounts[source] and activePlayersAccounts[source].number) then return "Error: account is locked, pay your invoices." end
+
     local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
     return success
 end)
 
-lib.callback.register("ND_Banking:actionATM", function(source, action, amount)
-    local amount = tonumber(config.ATM[amount])
-    if not action or not amount or not (action == "Deposit" or action == "Withdraw") then return end
-    local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
+lib.callback.register("ND_Banking:actionATM", function(source, amount)
+    local amount = tonumber(config.valuesWithdrawATM[amount])
+    if not amount then return end
+    if isAccountLocked(activePlayersAccounts[source] and activePlayersAccounts[source].number) then return end
+    local success = NDCore.Functions.WithdrawMoney(amount, source)
     return success
 end)
 
