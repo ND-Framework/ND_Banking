@@ -233,7 +233,9 @@ window.addEventListener("message", function(event) {
     if (item.type === "action") {
         $(".bank-home-card-balance").text(`$${item.personalAccountBalance}`);
         if (!item.result) {
-            createNotification("transaction", "Error: unable to complete action.")
+            createNotification("transaction", "Error: unable to complete action.");
+        } else if (typeof item.result == "string") {
+            createNotification("transaction", item.result);
         }
     }
 

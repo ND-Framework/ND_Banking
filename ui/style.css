@@ -122,15 +122,12 @@
     font-size: 2ch;
     text-align: center;
 }
-.atm-transactionButtons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 5%;
+.atm > button {
+    position: relative;
+    left: 30%;
     width: 40%;
     height: 3.5vh;
-    margin: 7% auto 5% auto;
-}
-.atm-transactionButtons > button {
+    margin: 5% auto;
     background-color: var(--color-main-3);
     color: var(--color-theme-3);
     border: none;
@@ -139,7 +136,7 @@
     font-size: 1.85ch;
     transition: 0.2s;
 }
-.atm-transactionButtons > button:hover {
+.atm > button:hover {
     transition: 0.3s;
     cursor: pointer;
     box-shadow: rgba(0, 0, 0, 0.28) 0px 0px 12px;
