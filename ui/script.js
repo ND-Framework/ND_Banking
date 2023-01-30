@@ -412,10 +412,8 @@ $(document).on("click", ".bank-invoice-box > div > div > button", function() {
     }));
 });
 
-$(".atm-transactionButtons > button").click(function() {
-    $.post(`https://${GetParentResourceName()}/interactATM`, JSON.stringify({
-        interaction: $(this).text()
-    }));
+$(".atm > button").click(function() {
+    $.post(`https://${GetParentResourceName()}/interactATM`);
 });
 
 $(document).on("click", ".atm-transactionValues > button", function() {
