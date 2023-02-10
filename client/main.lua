@@ -45,13 +45,17 @@ local fixClickAnim = false
 function animationATM(task)
     local animDict = "random@atmrobberygen@male"
     RequestAnimDict(animDict)
-    repeat Wait(0) until HasAnimDictLoaded(animDict)
+
+    if not HasAnimDictLoaded(animDict) then
+        repeat Wait(0) until HasAnimDictLoaded(animDict)
+    end
+
     if task == "enter" then
         TaskPlayAnim(ped, animDict, "enter", 8.0, -8.0, 4000, 0, 0, false, false, false)
         Wait(4000)
         TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
-    end
-    if task == "click" then
+
+    elseif task == "click" then
         if fixClickAnim or fixAnim then return end
         fixClickAnim = true
         TaskPlayAnim(ped, animDict, "idle_a", 8.0, -8.0, 3000, 0, 0, false, false, false)
@@ -59,8 +63,8 @@ function animationATM(task)
         if fixAnim then return end
         TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
         fixClickAnim = false
-    end
-    if task == "exit" then
+
+    elseif task == "exit" then
         fixAnim = true
         TaskPlayAnim(ped, animDict, "exit", 8.0, -8.0, 5500, 0, 0, false, false, false)
         Wait(5500)
@@ -68,6 +72,7 @@ function animationATM(task)
         fixAnim = false
     end
 end
+
 
 function checkATM()
     for _, atm in pairs(atmModels) do
@@ -213,14 +218,23 @@ CreateThread(function()
     while true do
         Wait(wait)
         local near = false
-        
+        local nearATM = false
+        local objectATM = 0
+        local text = false
+
+        for _, atm in pairs(atmModels) do
+            objectATM = GetClosestObjectOfType(pedCoords.x, pedCoords.y, pedCoords.z, 0.7, atm, false, false, false)
+            if objectATM ~= 0 then
+                nearATM = true
+                break
+            end
+        end
+
         if nearATM and not fixAnim then
             local object = objectATM
             near = true
-            if not text then
-                text = true
-                lib.showTextUI("[E] - Use ATM")
-            end
+            text = true
+            lib.showTextUI("[E] - Use ATM")
             if IsControlJustPressed(0, 51) then
                 local atmPosition = GetOffsetFromEntityInWorldCoords(object, 0.0, -0.5, 0.0)
                 TaskGoStraightToCoord(ped, atmPosition.x, atmPosition.y, atmPosition.z, 1.0, 1500, GetEntityHeading(object), 0.0)
@@ -232,16 +246,15 @@ CreateThread(function()
                     status = true
                 })
                 SetNuiFocus(true, true)
+                break
             end
         else
             for _, bank in pairs(banks) do
                 local dist = #(pedCoords - bank.coords)
                 if dist < 1.8 then
                     near = true
-                    if not text then
-                        text = true
-                        lib.showTextUI("[E] - Open bank")
-                    end
+                    text = true
+                    lib.showTextUI("[E] - Open bank")
                     if IsControlJustPressed(0, 51) then
                         lib.hideTextUI()
                         SendNUIMessage({
@@ -249,8 +262,8 @@ CreateThread(function()
                             status = true
                         })
                         SetNuiFocus(true, true)
+                        break
                     end
-                    break
                 end
             end
         end
@@ -264,5 +277,5 @@ CreateThread(function()
                 lib.hideTextUI()
             end
         end
-    end 
+    end
 end)
