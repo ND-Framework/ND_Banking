@@ -210,6 +210,84 @@ RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
     end
 end)
 
+--[[
+
+from and to tables:
+{
+    name = ,
+    account = ,
+    source = ,
+    character = ,
+}
+
+]]
+function createInvoice(amount, due, request, from, to)
+    if to.account and not (to.source and to.name) then
+        local receiverName, receiverSource = getInvoiceReceiverName(to.account)
+        to.name = receiverName
+        to.source = receiverSource
+    end
+    if to.character and not (to.source and to.name and to.account) then
+        local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {to.character})
+        if bank then
+            to.account = bank
+        end
+
+        local name = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {to.character})
+        if name and name[1] then
+            to.name = ("%s %s"):format(name[1].first_name, name[1].last_name)
+        end
+
+        for src, info in pairs(activePlayersAccounts) do
+            if info.number == bank then
+                to.source = src
+            end
+        end
+    end
+
+    if not from.account and from.source then
+        from.account = activePlayersAccounts[from.source] and activePlayersAccounts[from.source].number
+        local player = NDCore.Functions.GetPlayer(from.source)
+        from.name = ("%s %s"):format(player.firstName, player.lastName)
+    elseif not from.account and from.character then
+        local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {from.character})
+        if bank then
+            from.account = bank
+        end
+
+        local name = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {from.character})
+        if name and name[1] then
+            to.name = ("%s %s"):format(name[1].first_name, name[1].last_name)
+        end
+    end
+
+    local dueIn = tonumber(due)
+    if not dueIn or dueIn < 1 then return end
+
+    local time = os.time()
+    dueIn = time + (dueIn*86400)
+
+    MySQL.query.await("INSERT INTO `nd_banking_invoices` (`sender_name`, `receiver_name`, `sender_account`, `receiver_account`, `amount`, `created`, `due_in`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", {
+        from.name,
+        to.name,
+        from.account,
+        to.account,
+        amount,
+        time,
+        dueIn,
+        request and "pending" or "unpaid"
+    })
+
+    if from.source then
+        TriggerClientEvent("ND_Banking:updateInvoices", from.source, getInvoices(from.account), true)
+    end
+    if to.source then
+        TriggerClientEvent("ND_Banking:updateInvoices", to.source, getInvoices(to.account))
+    end
+end
+
+exports("createInvoice", createInvoice)
+
 RegisterNetEvent("ND_Banking:createInvoice", function(account, amount, due)
     local src = source
 
