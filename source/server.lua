@@ -380,3 +380,8 @@ lib.callback.register("ND_Banking:transferMoney", function(source, account, amou
     end
     return "Error: no active account with this number not found."
 end)
+
+NDCore.loadSQL({
+    "database/accounts.sql",
+    "database/invoices.sql"
+})
