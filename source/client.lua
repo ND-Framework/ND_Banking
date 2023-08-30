@@ -85,10 +85,10 @@ end)
 RegisterNUICallback("interactATM", function(data)
     PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
     lib.callback("ND_Banking:actionATM", false, function(result)
-        local character = NDCore.Functions.GetSelectedCharacter()
+        local player = NDCore.getPlayer()
         SendNUIMessage({
             type = "actionATM",
-            personalAccountBalance = character.bank,
+            personalAccountBalance = player.bank,
             result = result
         })
     end, selectedATM)
@@ -130,10 +130,10 @@ end)
 
 RegisterNUICallback("action", function(data)
     lib.callback("ND_Banking:action", false, function(result)
-        local character = NDCore.Functions.GetSelectedCharacter()
+        local player = NDCore.getPlayer()
         SendNUIMessage({
             type = "action",
-            personalAccountBalance = character.bank,
+            personalAccountBalance = player.bank,
             result = result
         })
     end, data.action, data.amount)
@@ -156,13 +156,13 @@ RegisterNetEvent("ND_Banking:updateHistory", function(history)
 end)
 
 RegisterNetEvent("ND_Banking:bankInfo", function(bank, invoices, history)
-    local character = NDCore.Functions.GetSelectedCharacter()
+    local player = NDCore.getPlayer()
     SendNUIMessage({
         type = "bankInfo",
         personalAccountNumber = bank,
         invoices = invoices,
-        personalAccountBalance = character.bank,
-        name = character.firstName .. " " .. character.lastName,
+        personalAccountBalance = player.bank,
+        name = player.fullname,
         history = history
     })
 end)
@@ -174,13 +174,13 @@ function start()
     })
     lib.callback("ND_Banking:getInfo", false, function(bank, invoices, history)
         if not bank then return end
-        local character = NDCore.Functions.GetSelectedCharacter()
+        local player = NDCore.getPlayer()
         SendNUIMessage({
             type = "bankInfo",
             personalAccountNumber = bank,
             invoices = invoices,
-            personalAccountBalance = character.bank,
-            name = character.firstName .. " " .. character.lastName,
+            personalAccountBalance = player.bank,
+            name = player.fullname,
             history = history
         })
     end)
