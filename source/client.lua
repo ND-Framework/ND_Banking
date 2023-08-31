@@ -1,8 +1,9 @@
-local ped = PlayerPedId()
-local pedCoords = GetEntityCoords(ped)
+local pedCoords
+local usingTarget = false
 local text = false
 local nearATM = false
 local selectedATM = 0
+local bankPeds = {}
 local atmModels = {
     `prop_atm_01`,  -- older atms
     `prop_atm_02`,  -- blue atm
@@ -11,32 +12,529 @@ local atmModels = {
 }
 local banks = {
     {
-        coords = vector3(1175.77, 2706.89, 38.09), -- harmony fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(1174.95, 2708.23, 38.08, 179.02), -- route 68 fleeca bank
+        name = "Fleeca Bank",
+        model = `a_m_y_busicas_01`,
+        clothing = {
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            leg = {
+                drawable = 0,
+                texture = 1
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 0,
+                texture = 2
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            torso = {
+                drawable = 0,
+                texture = 2
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(149.23, -1040.57, 29.36), -- legion square fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(149.46, -1042.06, 29.36, 339.52), -- legion square fleeca bank
+        name = "Fleeca Bank",
+        model = `a_m_y_business_01`,
+        clothing = {
+            torso = {
+                drawable = 0,
+                texture = 1
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 0,
+                texture = 0
+            },
+            torso2 = {
+                drawable = 1,
+                texture = 2
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 0,
+                texture = 0
+            },
+            leg = {
+                drawable = 0,
+                texture = 1
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = 1,
+                texture = 1
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(-2962.53, 482.25, 15.69), -- great ocean hwy fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(-2961.14, 482.90, 15.69, 88.35), -- great ocean hwy fleeca bank
+        name = "Fleeca Bank",
+        model = `a_f_y_business_04`,
+        clothing = {
+            torso = {
+                drawable = 1,
+                texture = 1
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 0,
+                texture = 0
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 1,
+                texture = 2
+            },
+            leg = {
+                drawable = 1,
+                texture = 2
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = 0,
+                texture = 0
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(-112.02, 6469.13, 31.62), -- paleto bay bank
-        name = "Blaine County Savings Bank"
+        coords = vec4(-111.20, 6470.07, 31.62, 134.92), -- paleto bay bank
+        name = "Blaine County Savings Bank",
+        model = `a_m_y_business_03`,
+        clothing = {
+            torso = {
+                drawable = 1,
+                texture = 0
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 0,
+                texture = 1
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 0,
+                texture = 0
+            },
+            leg = {
+                drawable = 0,
+                texture = 2
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = 0,
+                texture = 0
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(-351.56, -49.70, 49.02), -- burton hawick fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(-351.35, -51.24, 49.03, 344.95), -- burton hawick fleeca bank
+        name = "Fleeca Bank",
+        model = `a_m_y_business_02`,
+        clothing = {
+            torso = {
+                drawable = 0,
+                texture = 1
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 1,
+                texture = 1
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 2,
+                texture = 0
+            },
+            leg = {
+                drawable = 0,
+                texture = 2
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = -1,
+                texture = -1
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(313.66, -278.90, 54.16), -- alta hawick fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(313.78, -280.42, 54.16, 342.14), -- alta hawick fleeca bank
+        name = "Fleeca Bank",
+        model = `a_f_y_business_01`,
+        clothing = {
+            torso = {
+                drawable = 1,
+                texture = 1
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 1,
+                texture = 0
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 1,
+                texture = 0
+            },
+            leg = {
+                drawable = 1,
+                texture = 2
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = 1,
+                texture = 0
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     },
     {
-        coords = vector3(-1213.08, -330.93, 37.77), -- rockford hills fleeca bank
-        name = "Fleeca Bank"
+        coords = vec4(-1211.98, -331.94, 37.78, 29.13), -- rockford hills fleeca bank
+        name = "Fleeca Bank",
+        model = `a_f_y_business_02`,
+        clothing = {
+            torso = {
+                drawable = 1,
+                texture = 0
+            },
+            shoes = {
+                drawable = 0,
+                texture = 0
+            },
+            accessory = {
+                drawable = 0,
+                texture = 0
+            },
+            face = {
+                drawable = 0,
+                texture = 0
+            },
+            torso2 = {
+                drawable = 0,
+                texture = 0
+            },
+            mask = {
+                drawable = 0,
+                texture = 0
+            },
+            badge = {
+                drawable = 0,
+                texture = 0
+            },
+            undershirt = {
+                drawable = 0,
+                texture = 0
+            },
+            bag = {
+                drawable = 0,
+                texture = 0
+            },
+            kevlar = {
+                drawable = 0,
+                texture = 0
+            },
+            hair = {
+                drawable = 0,
+                texture = 2
+            },
+            leg = {
+                drawable = 1,
+                texture = 0
+            },
+            ears = {
+                drawable = -1,
+                texture = -1
+            },
+            glasses = {
+                drawable = 0,
+                texture = 0
+            },
+            bracelets = {
+                drawable = -1,
+                texture = -1
+            },
+            watch = {
+                drawable = -1,
+                texture = -1
+            },
+            hat = {
+                drawable = -1,
+                texture = -1
+            },
+        }
     }
 }
 local fixAnim = false
@@ -47,24 +545,24 @@ function animationATM(task)
     RequestAnimDict(animDict)
     repeat Wait(0) until HasAnimDictLoaded(animDict)
     if task == "enter" then
-        TaskPlayAnim(ped, animDict, "enter", 8.0, -8.0, 4000, 0, 0, false, false, false)
+        TaskPlayAnim(cache.ped, animDict, "enter", 8.0, -8.0, 4000, 0, 0, true, true, true)
         Wait(4000)
-        TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+        TaskPlayAnim(cache.ped, animDict, "base", 8.0, -8.0, -1, 1, 0, true, true, true)
     end
     if task == "click" then
         if fixClickAnim or fixAnim then return end
         fixClickAnim = true
-        TaskPlayAnim(ped, animDict, "idle_a", 8.0, -8.0, 3000, 0, 0, false, false, false)
+        TaskPlayAnim(cache.ped, animDict, "idle_a", 8.0, -8.0, 3000, 0, 0, true, true, true)
         Wait(2500)
         if fixAnim then return end
-        TaskPlayAnim(ped, animDict, "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+        TaskPlayAnim(cache.ped, animDict, "base", 8.0, -8.0, -1, 1, 0, true, true, true)
         fixClickAnim = false
     end
     if task == "exit" then
         fixAnim = true
-        TaskPlayAnim(ped, animDict, "exit", 8.0, -8.0, 5500, 0, 0, false, false, false)
+        TaskPlayAnim(cache.ped, animDict, "exit", 8.0, 8.0, 5500, 0, 0, true, true, true)
         Wait(5500)
-        ClearPedTasks(ped)
+        ClearPedTasks(cache.ped)
         fixAnim = false
     end
 end
@@ -72,7 +570,7 @@ end
 function checkATM()
     for _, atm in pairs(atmModels) do
         local object = GetClosestObjectOfType(pedCoords.x, pedCoords.y, pedCoords.z, 0.7, atm, false, false, false)
-        if object ~= 0 then
+        if object ~= 0 and GetEntityHealth(object) > 0 then
             return true, object
         end
     end
@@ -103,8 +601,10 @@ RegisterNUICallback("close", function(data)
     PlaySoundFrontend(-1, "PIN_BUTTON", "ATM_SOUNDS", 1)
     if data and data.atm then
         animationATM("exit")
-        lib.showTextUI("[E] - Use ATM")
-    else
+        if not usingTarget then
+            lib.showTextUI("[E] - Use ATM")
+        end
+    elseif not usingTarget then
         lib.showTextUI("[E] - Open bank")
     end
     text = true
@@ -192,40 +692,131 @@ AddEventHandler("playerSpawned", function()
 end)
 
 AddEventHandler("onResourceStart", function(resourceName)
-    if (GetCurrentResourceName() ~= resourceName) then
-        return
-    end
+    if (GetCurrentResourceName() ~= resourceName) then return end
     Wait(1000)
     start()
 end)
 
-CreateThread(function()
-    while true do
-        Wait(1000)
-        ped = PlayerPedId()
-        pedCoords = GetEntityCoords(ped)
-        nearATM, objectATM = checkATM()
+local function createBankPeds(options)
+    for i=1, #bankPeds do
+        NDCore.removeAiPed(bankPeds[i])
     end
-end)
+    bankPeds = {}
 
-CreateThread(function()
-    local wait = 500
-    while true do
-        Wait(wait)
-        local near = false
-        
-        if nearATM and not fixAnim then
-            local object = objectATM
-            near = true
-            if not text then
-                text = true
-                lib.showTextUI("[E] - Use ATM")
+    for i=1, #banks do
+        local bank = banks[i]
+        bankPeds[#bankPeds+1] = NDCore.createAiPed({
+            model = bank.model,
+            coords = bank.coords,
+            options = options,
+            distance = 20.0,
+            clothing = bank.clothing,
+            blip = {
+                label = bank.name,
+                sprite = 272,
+                scale = 0.8,
+                color = 43
+            },
+            anim = {
+                dict = "anim@amb@casino@valet_scenario@pose_d@",
+                clip = "base_a_m_y_vinewood_01"
+            }
+        })
+    end
+end
+
+local function noTarget()
+    CreateThread(function()
+        while not usingTarget do
+            pedCoords = GetEntityCoords(cache.ped)
+            nearATM, objectATM = checkATM()
+            Wait(1000)
+        end
+    end)
+    
+    CreateThread(function()
+        local wait = 500
+        while not usingTarget do
+            Wait(wait)
+            local near = false
+            
+            if nearATM and not fixAnim then
+                local object = objectATM
+                near = true
+                if not text then
+                    text = true
+                    lib.showTextUI("[E] - Use ATM")
+                end
+                if IsControlJustPressed(0, 51) then
+                    local atmPosition = GetOffsetFromEntityInWorldCoords(object, 0.0, -0.5, 0.0)
+                    TaskGoStraightToCoord(cache.ped, atmPosition.x, atmPosition.y, atmPosition.z, 1.0, 1500, GetEntityHeading(object), 0.0)
+                    Wait(1500)
+                    lib.hideTextUI()
+                    animationATM("enter")
+                    SendNUIMessage({
+                        type = "displayATM",
+                        status = true
+                    })
+                    SetNuiFocus(true, true)
+                end
+            else
+                for _, bank in pairs(banks) do
+                    local dist = #(pedCoords - vec3(bank.coords.x, bank.coords.y, bank.coords.z))
+                    if dist < 2.0 then
+                        near = true
+                        if not text then
+                            text = true
+                            lib.showTextUI("[E] - Open bank")
+                        end
+                        if IsControlJustPressed(0, 51) then
+                            lib.hideTextUI()
+                            SendNUIMessage({
+                                type = "display",
+                                status = true
+                            })
+                            SetNuiFocus(true, true)
+                        end
+                        break
+                    end
+                end
             end
-            if IsControlJustPressed(0, 51) then
-                local atmPosition = GetOffsetFromEntityInWorldCoords(object, 0.0, -0.5, 0.0)
-                TaskGoStraightToCoord(ped, atmPosition.x, atmPosition.y, atmPosition.z, 1.0, 1500, GetEntityHeading(object), 0.0)
-                Wait(1500)
-                lib.hideTextUI()
+    
+            if near then
+                wait = 0
+            else
+                wait = 500
+                if text then
+                    text = false
+                    lib.hideTextUI()
+                end
+            end
+        end
+    end)
+
+    createBankPeds()
+end
+
+NDCore.isResourceStarted("ox_target", function(started)
+    usingTarget = started
+    if not usingTarget then return noTarget() end
+    exports.ox_target:addModel(atmModels, {
+        {
+            name = "nd_banking:atm",
+            icon = "fa-solid fa-money-bill-wave",
+            label = "Use ATM",
+            distance = 0.7,
+            canInteract = function(entity, distance, coords, name, boneId)
+                return GetEntityHealth(entity) > 0
+            end,
+            onSelect = function(data)
+                local atmPosition = GetOffsetFromEntityInWorldCoords(data.entity, 0.0, -0.6, 0.0)
+                local heading = GetEntityHeading(data.entity)
+                TaskGoStraightToCoord(cache.ped, atmPosition.x, atmPosition.y, atmPosition.z, 0.5, 500, heading, 0.0)
+                Wait(500)
+                TaskGoStraightToCoord(cache.ped, atmPosition.x, atmPosition.y, atmPosition.z, 0.5, -1, heading, 1.5)
+                Wait(500)
+                TaskTurnPedToFaceCoord(cache.ped, data.coords.x, data.coords.y, data.coords.z, 600)
+                Wait(700)
                 animationATM("enter")
                 SendNUIMessage({
                     type = "displayATM",
@@ -233,36 +824,24 @@ CreateThread(function()
                 })
                 SetNuiFocus(true, true)
             end
-        else
-            for _, bank in pairs(banks) do
-                local dist = #(pedCoords - bank.coords)
-                if dist < 1.8 then
-                    near = true
-                    if not text then
-                        text = true
-                        lib.showTextUI("[E] - Open bank")
-                    end
-                    if IsControlJustPressed(0, 51) then
-                        lib.hideTextUI()
-                        SendNUIMessage({
-                            type = "display",
-                            status = true
-                        })
-                        SetNuiFocus(true, true)
-                    end
-                    break
-                end
-            end
-        end
+        }
+    })
 
-        if near then
-            wait = 0
-        else
-            wait = 500
-            if text then
-                text = false
-                lib.hideTextUI()
+    Wait(1000)
+    if not usingTarget then return end
+    createBankPeds({
+        {
+            name = "nd_banking:bank",
+            icon = "fa-solid fa-building-columns",
+            label = "Bank",
+            distance = 2.0,
+            onSelect = function(data)
+                SendNUIMessage({
+                    type = "display",
+                    status = true
+                })
+                SetNuiFocus(true, true)
             end
-        end
-    end 
+        }
+    })
 end)
