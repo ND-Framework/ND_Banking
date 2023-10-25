@@ -146,7 +146,7 @@ function getInvoiceReceiverName(account)
     return ("%s %s"):format(receiverNames[1].firstname, receiverNames[1].lastname)
 end
 
-RegisterNetEvent("ND:moneyChange", function(player, moneyType, amount, action, description)
+AddEventHandler("ND:moneyChange", function(player, moneyType, amount, action, description)
     if moneyType ~= "bank" then return end
     if action == "set" then return end
     local history = transactionHistory(activePlayersAccounts[player] and activePlayersAccounts[player].number, {
@@ -158,7 +158,7 @@ RegisterNetEvent("ND:moneyChange", function(player, moneyType, amount, action, d
     TriggerClientEvent("ND_Banking:updateHistory", player, history)
 end)
 
-RegisterNetEvent("ND:characterLoaded", function(character)
+AddEventHandler("ND:characterLoaded", function(character)
     local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {character.id})
     if not bank then
         bank = createPersonalAccount(character.id)
