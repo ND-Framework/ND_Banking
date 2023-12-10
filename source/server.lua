@@ -62,18 +62,19 @@ function isAccountLocked(number)
 end
 
 function payInvoice(invoice, source)
-    local character = NDCore.Functions.GetPlayer(source)
-    if character.bank < invoice.amount then return end
+    local player = NDCore.getPlayer(source)
+    if player.bank < invoice.amount then return end
 
-    NDCore.Functions.DeductMoney(invoice.amount, source, "bank", "Invoice paid to " .. invoice.sender_name .. ".")
+    player.DeductMoney("bank", invoice.amount, "Invoice paid to " .. invoice.sender_name .. ".")
     MySQL.query.await("UPDATE `nd_banking_invoices` SET `status` = 'paid' WHERE `invoice_id` = ?", {invoice.invoice_id})
     TriggerClientEvent("ND_Banking:updateInvoices", source, getInvoices(activePlayersAccounts[source] and activePlayersAccounts[source].number))
 
     local senderCharacter, senderSource = refreshInvoiceSender(invoice.invoice_id)
     if senderSource then
-        NDCore.Functions.AddMoney(invoice.amount, senderSource, "bank", "Invoice paid by " .. invoice.receiver_name .. ".")
+        local senderPlayer = NDCore.getPlayer(senderSource)
+        senderPlayer.addMoney("bank", invoice.amount, "Invoice paid by " .. invoice.receiver_name .. ".")
     else
-        MySQL.query.await("UPDATE characters SET bank = bank + ? WHERE character_id = ? LIMIT 1", {invoice.amount, senderCharacter})
+        MySQL.query.await("UPDATE nd_characters SET bank = bank + ? WHERE charid = ? LIMIT 1", {invoice.amount, senderCharacter})
     end
 end
 
@@ -132,20 +133,20 @@ end
 function getInvoiceReceiverName(account)
     for accountSource, accountInfo in pairs(activePlayersAccounts) do
         if accountInfo.number == account then
-            local character = NDCore.Functions.GetPlayer(accountSource)
+            local character = NDCore.getPlayer(accountSource)
             if not character then break end
-            return ("%s %s"):format(character.firstName, character.lastName), accountSource
+            return character.fullname, accountSource
         end
     end
 
     local receiver = MySQL.scalar.await("SELECT `owner` FROM `nd_banking_accounts` WHERE `account_number` = ?", {account})
     if not receiver then return end
-    local receiverNames = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {receiver})
+    local receiverNames = MySQL.query.await("SELECT `firstname`, `lastname` FROM `nd_characters` WHERE `charid` = ?", {receiver})
     if not receiverNames or not receiverNames[1] then return end 
-    return ("%s %s"):format(receiverNames[1].first_name, receiverNames[1].last_name)
+    return ("%s %s"):format(receiverNames[1].firstname, receiverNames[1].lastname)
 end
 
-RegisterNetEvent("ND:moneyChange", function(player, moneyType, amount, action, description)
+AddEventHandler("ND:moneyChange", function(player, moneyType, amount, action, description)
     if moneyType ~= "bank" then return end
     if action == "set" then return end
     local history = transactionHistory(activePlayersAccounts[player] and activePlayersAccounts[player].number, {
@@ -157,7 +158,7 @@ RegisterNetEvent("ND:moneyChange", function(player, moneyType, amount, action, d
     TriggerClientEvent("ND_Banking:updateHistory", player, history)
 end)
 
-RegisterNetEvent("ND:characterLoaded", function(character)
+AddEventHandler("ND:characterLoaded", function(character)
     local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {character.id})
     if not bank then
         bank = createPersonalAccount(character.id)
@@ -178,7 +179,7 @@ RegisterNetEvent("ND_Banking:interactInvoice", function(interaction, id)
     if interaction == "pay" then
         for _, invoice in pairs(invoices.unpaid) do
             if invoice.invoice_id == id then
-                local character = NDCore.Functions.GetPlayer(src)
+                local character = NDCore.getPlayer(src)
                 if character.bank < invoice.amount then return end
                 payInvoice(invoice, src)
                 break
@@ -233,9 +234,9 @@ function createInvoice(amount, due, request, from, to)
             to.account = bank
         end
 
-        local name = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {to.character})
+        local name = MySQL.query.await("SELECT `firstname`, `lastname` FROM `nd_characters` WHERE `charid` = ?", {to.character})
         if name and name[1] then
-            to.name = ("%s %s"):format(name[1].first_name, name[1].last_name)
+            to.name = ("%s %s"):format(name[1].firstname, name[1].lastname)
         end
 
         for src, info in pairs(activePlayersAccounts) do
@@ -247,17 +248,17 @@ function createInvoice(amount, due, request, from, to)
 
     if not from.account and from.source then
         from.account = activePlayersAccounts[from.source] and activePlayersAccounts[from.source].number
-        local player = NDCore.Functions.GetPlayer(from.source)
-        from.name = ("%s %s"):format(player.firstName, player.lastName)
+        local player = NDCore.getPlayer(from.source)
+        from.name = player.fullname
     elseif not from.account and from.character then
         local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {from.character})
         if bank then
             from.account = bank
         end
 
-        local name = MySQL.query.await("SELECT `first_name`, `last_name` FROM `characters` WHERE `character_id` = ?", {from.character})
+        local name = MySQL.query.await("SELECT `firstname`, `lastname` FROM `nd_characters` WHERE `charid` = ?", {from.character})
         if name and name[1] then
-            to.name = ("%s %s"):format(name[1].first_name, name[1].last_name)
+            to.name = ("%s %s"):format(name[1].firstname, name[1].lastname)
         end
     end
 
@@ -303,9 +304,9 @@ RegisterNetEvent("ND_Banking:createInvoice", function(account, amount, due)
     local time = os.time()
     dueIn = time + (dueIn*86400)
 
-    local character = NDCore.Functions.GetPlayer(src)
+    local character = NDCore.getPlayer(src)
     MySQL.query.await("INSERT INTO `nd_banking_invoices` (`sender_name`, `receiver_name`, `sender_account`, `receiver_account`, `amount`, `created`, `due_in`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", {
-        ("%s %s"):format(character.firstName, character.lastName),
+        character.fullname,
         receiverName,
         sender,
         account,
@@ -322,7 +323,7 @@ end)
 
 lib.callback.register("ND_Banking:getInfo", function(source)
     if not activePlayersAccounts[source] then
-        local character = NDCore.Functions.GetPlayer(source)
+        local character = NDCore.getPlayer(source)
         if not character then return end
         local bank = MySQL.scalar.await("SELECT `account_number` FROM `nd_banking_accounts` WHERE `owner` = ?", {character.id})
         if not bank then
@@ -347,16 +348,16 @@ lib.callback.register("ND_Banking:action", function(source, action, amount)
 
     if action == "Withdraw" and isAccountLocked(activePlayersAccounts[source] and activePlayersAccounts[source].number) then return "Error: account is locked, pay your invoices." end
 
-    local success = NDCore.Functions[action == "Deposit" and "DepositMoney" or action == "Withdraw" and "WithdrawMoney"](amount, source)
-    return success
+    local player = NDCore.getPlayer(source)
+    return player and player[action == "Deposit" and "depositMoney" or action == "Withdraw" and "withdrawMoney"](amount)
 end)
 
 lib.callback.register("ND_Banking:actionATM", function(source, amount)
     local amount = tonumber(config.valuesWithdrawATM[amount])
     if not amount then return end
     if isAccountLocked(activePlayersAccounts[source] and activePlayersAccounts[source].number) then return end
-    local success = NDCore.Functions.WithdrawMoney(amount, source)
-    return success
+    local player = NDCore.getPlayer(source)
+    return player and player.withdrawMoney(amount)
 end)
 
 lib.callback.register("ND_Banking:transferMoney", function(source, account, amount, message)
@@ -366,18 +367,21 @@ lib.callback.register("ND_Banking:transferMoney", function(source, account, amou
     
     for receiver, accountInfo in pairs(activePlayersAccounts) do
         if accountInfo.number == account then
-            local character = NDCore.Functions.GetPlayer(source)
-            local receiverCharacter = NDCore.Functions.GetPlayer(receiver)
+            local character = NDCore.getPlayer(source)
+            local receiverCharacter = NDCore.getPlayer(receiver)
 
-            local senderMessage = ("Bank transfer to %s %s (%s)%s"):format(receiverCharacter.firstName, receiverCharacter.lastName, accountInfo.number, (message and message ~= "") and ": " .. message or "")
-            local receiverMessage = ("Bank transfer from %s %s (%s)%s"):format(character.firstName, character.lastName, playerAccount, (message and message ~= "") and ": " .. message or "")
+            local senderMessage = ("Bank transfer to %s %s (%s)%s"):format(receiverCharacter.firstname, receiverCharacter.lastname, accountInfo.number, (message and message ~= "") and ": " .. message or "")
+            local receiverMessage = ("Bank transfer from %s %s (%s)%s"):format(character.firstname, character.lastname, playerAccount, (message and message ~= "") and ": " .. message or "")
 
-            local success = NDCore.Functions.TransferBank(amount, source, receiver, senderMessage, receiverMessage)
-            if not success then
-                return "Error: an issue occurred, try again later."
-            end
+            local success = character.deductMoney("bank", amount, senderMessage) and receiverCharacter.addMoney("bank", amount, receiverMessage)
+            if not success then return "Error: an issue occurred, try again later." end
             return ("Success: transfer of $%s sent to %s %s"):format(amount, receiverCharacter.firstName, receiverCharacter.lastName)
         end
     end
     return "Error: no active account with this number not found."
 end)
+
+NDCore.loadSQL({
+    "database/accounts.sql",
+    "database/invoices.sql"
+})

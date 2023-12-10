@@ -2,7 +2,7 @@
 
 author "Andyyy#7666"
 description "ND Banking resource for ND Framework"
-version "1.0.0"
+version "2.0.0"
 
 fx_version "cerulean"
 game "gta5"
@@ -18,13 +18,13 @@ ui_page "ui/index.html"
 
 shared_scripts {
     "@ox_lib/init.lua",
-    "@ND_Core/shared/import.lua",
+    "@ND_Core/init.lua",
     "config.lua"
 }
 server_scripts {
     "@oxmysql/lib/MySQL.lua",
-    "server/main.lua"
+    "source/server.lua"
 }
 client_scripts {
-    "client/main.lua"
+    "source/client.lua"
 }

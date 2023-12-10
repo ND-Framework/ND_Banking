@@ -274,6 +274,7 @@ window.addEventListener("message", function(event) {
     }
 
     if (item.type === "atmValues") {
+        $(".atm-transactionValues").empty();
         item.values.forEach(function (value, i) {
             $(".atm-transactionValues").append(`<button data-id="${i+1}">${value}</button>`)
         });
