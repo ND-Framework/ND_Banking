@@ -65,7 +65,7 @@ function payInvoice(invoice, source)
     local player = NDCore.getPlayer(source)
     if player.bank < invoice.amount then return end
 
-    player.DeductMoney("bank", invoice.amount, "Invoice paid to " .. invoice.sender_name .. ".")
+    player.deductMoney("bank", invoice.amount, "Invoice paid to " .. invoice.sender_name .. ".")
     MySQL.query.await("UPDATE `nd_banking_invoices` SET `status` = 'paid' WHERE `invoice_id` = ?", {invoice.invoice_id})
     TriggerClientEvent("ND_Banking:updateInvoices", source, getInvoices(activePlayersAccounts[source] and activePlayersAccounts[source].number))
 
