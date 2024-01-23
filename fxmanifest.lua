@@ -8,6 +8,12 @@ fx_version "cerulean"
 game "gta5"
 lua54 "yes"
 
+dependencies {
+    "ND_Core",
+    "oxmysql",
+    "ox_lib"
+}
+
 files {
     "ui/index.html",
     "ui/img/**",
